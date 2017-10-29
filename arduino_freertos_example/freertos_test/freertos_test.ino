@@ -1,6 +1,7 @@
 #include <Arduino_FreeRTOS.h>
 extern "C" {
-  #include  "TimeDelayedTaskCreator.h"
+  #include "TimeDelayedTaskCreator.h"
+  #include "PeriodicTaskRunner.h"
 }
 
 // define two tasks for Blink & AnalogRead
@@ -10,8 +11,7 @@ void TaskAnalogRead( void *pvParameters );
 // the setup function runs once when you press reset or power the board
 void setup() {
   Serial.begin(9600);
-  CreateTimeDelayedTask(1000, TaskWrite, (char *)"something", 128, NULL, 1);
-  CreateTimeDelayedTask(5000, TaskWrite, (char *)"something", 128, NULL, 1);
+  startPeriodicTasks();
 }
 
 void loop()
@@ -22,10 +22,6 @@ void loop()
 /*--------------------------------------------------*/
 /*---------------------- Tasks ---------------------*/
 /*--------------------------------------------------*/
-
-void TaskWrite(void *pvParams) {
-  Serial.println("hello world");
-}
 
 void TaskBlink(void *pvParameters) 
 {
@@ -62,5 +58,18 @@ void TaskAnalogRead(void *pvParameters)  // This is a task.
     }
 
     vTaskDelay(1);    
+  }
+}
+
+//Example of a periodic task
+void TaskWrite(void *params) {
+  TickType_t lastWakeTime;
+  const TickType_t frequency = 1000 / portTICK_PERIOD_MS; //run every 10 ms
+
+  lastWakeTime = xTaskGetTickCount();
+
+  for(;;) {
+    vTaskDelayUntil(&lastWakeTime, frequency);
+    Serial.println("hello world");
   }
 }
