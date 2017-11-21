@@ -602,6 +602,12 @@
     <None Include="src\ASF\sam\drivers\usart\usart.h">
       <SubType>compile</SubType>
     </None>
+    <Compile Include="src\partest.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\partest.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\PeriodicTaskRunner.c">
       <SubType>compile</SubType>
     </Compile>
