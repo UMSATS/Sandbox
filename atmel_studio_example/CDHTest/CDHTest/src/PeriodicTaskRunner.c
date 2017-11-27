@@ -12,8 +12,9 @@ void _initializePeriodicTask(PeriodicTaskInfo *info, const signed char *name, in
 }
 
 void startPeriodicTasks(void) {
-	_initializePeriodicTask(&CDH_PeriodicTaskTable[0], (const signed char *)"Hello World 1", 1, 128, TaskWrite, NULL, (xTaskHandle) NULL);
-	//_initializePeriodicTask(&CDH_PeriodicTaskTable[1], (const signed char *)"Hello World 2", 1, 128, TaskWrite, NULL, (xTaskHandle) NULL);
+	_initializePeriodicTask(&CDH_PeriodicTaskTable[BLINK_TASK], (const signed char *)"Blink Task", 2, 128, TaskBlink, NULL, (xTaskHandle) NULL);
+	_initializePeriodicTask(&CDH_PeriodicTaskTable[WRITE_TASK], (const signed char *)"Write Task", 2, 128, TaskWrite, NULL, (xTaskHandle) NULL);
+	_initializePeriodicTask(&CDH_PeriodicTaskTable[COUNT_TASK], (const signed char *)"Write Task", 2, 128, TaskCount, NULL, (xTaskHandle) NULL);
 
 	PeriodicTaskInfo info;
 	for(int i = 0; i < TOTAL_NUMBER_OF_TASKS; i++) {
