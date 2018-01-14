@@ -14,10 +14,14 @@
 #define RARELY_ON    50
 #define NEVER_ON     100
 
+// These are typedefs/defines present in FreeRTOS v8.0 but not present in FreeRTOS v7.0. 
+// TODO: Use the most recent FreeRTOS for this project OR change this project to use FreeRTOS v7.0 API.
 typedef pdTASK_CODE TaskFunction_t;
 typedef xTaskHandle TaskHandle_t;
 typedef portTickType TickType_t;
 typedef unsigned long UBaseType_t;
+#define pdMS_TO_TICKS( xTimeInMs ) ( ( TickType_t ) ( ( ( TickType_t ) ( xTimeInMs ) * ( TickType_t ) configTICK_RATE_HZ ) / ( TickType_t ) 1000 ) )
+
 
 // ----------------------- ENUMERATIONS AND ENUMERATION TYPEDEFS ---------------------------------
 // Register your periodic task(s) at the cdh task table in PeriodicTaskRunner.c.
