@@ -614,6 +614,18 @@
     <Compile Include="src\PeriodicTaskRunner.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\PowerMonitor.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\PowerMonitor.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\SerialPrint.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\TaskWrite.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\TaskWrite.h">
       <SubType>compile</SubType>
     </Compile>

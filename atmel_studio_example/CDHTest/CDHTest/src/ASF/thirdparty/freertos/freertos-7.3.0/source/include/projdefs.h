@@ -72,6 +72,9 @@
 /* Defines the prototype to which task functions must conform. */
 typedef void (*pdTASK_CODE)( void * );
 
+/* Converts a time in milliseconds to a time in ticks. */
+#define pdMS_TO_TICKS( xTimeInMs ) ( ( TickType_t ) ( ( ( TickType_t ) ( xTimeInMs ) * ( TickType_t ) configTICK_RATE_HZ ) / ( TickType_t ) 1000 ) )
+
 #define pdTRUE		( 1 )
 #define pdFALSE		( 0 )
 

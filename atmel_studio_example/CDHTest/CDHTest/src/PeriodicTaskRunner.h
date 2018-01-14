@@ -5,23 +5,48 @@
 #include <FreeRTOS.h>
 #include <task.h>
 
+
+// ----------------------- DEFINES ---------------------------------------------------------------
+// The power is assumed to be some value between 0 and 100. If a task's "powerPriority" falls below
+// one of these threshholds, it will be suspended.
+#define ALWAYS_ON    0
+#define SOMETIMES_ON 25
+#define RARELY_ON    50
+#define NEVER_ON     100
+
+typedef pdTASK_CODE TaskFunction_t;
+typedef xTaskHandle TaskHandle_t;
+typedef portTickType TickType_t;
+typedef unsigned long UBaseType_t;
+
+// ----------------------- ENUMERATIONS AND ENUMERATION TYPEDEFS ---------------------------------
+// Register your periodic task(s) at the cdh task table in PeriodicTaskRunner.c.
 enum CDH_TASK_TABLE_INDICES
 {
-    HELLO_WORLD_1_IX,
-    //HELLO_WORLD_2_IX,
-    TOTAL_NUMBER_OF_TASKS,
+	HELLO_WORLD_HIGH_IX,
+	HELLO_WORLD_LOW_IX,
+	CHANGE_MOCK_POWER_IX,
+	TOTAL_NUMBER_OF_TASKS,
 };
 
-//we will eventually need this to stop tasks when power management wants to
-typedef struct PeriodicTaskInfo {
+// ----------------------- STRUCTURES AND STRUCTURE TYPEDEFS -------------------------------------
+// We will eventually need this to stop tasks when power management wants to.
+typedef struct {
 	const signed char *name;
 	int priority;
 	int stackDepth;
-	pdTASK_CODE taskFunction;
+	TaskFunction_t taskFunction;
 	void *taskParams;
-	xTaskHandle taskHandle;
-} PeriodicTaskInfo;
+	TaskHandle_t taskHandle;
+	int powerPriority;  // http://www.freertos.org/RTOS-task-states.html
+} TaskInfo;
 
+// ----------------------- EXTERNS ---------------------------------------------------------------
+extern TaskInfo CDH_PeriodicTaskTable[TOTAL_NUMBER_OF_TASKS];
+extern int mock_power;
+
+// ----------------------- FUNCTION PROTOTYPES ---------------------------------------------------
 void startPeriodicTasks(void);
+void changeMockPower(void *pvParams);
 
 #endif
