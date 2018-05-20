@@ -13,11 +13,12 @@
 // -----------------------------------------------------------------------------------------------
 #include "Generic_FreeRTOS.h"
 
-#include <due_can.h>;
+#include <due_can.h>
   
 extern "C" 
 {
   #include "CANManager.h"
+  #include "PayloadData.h"
   #include "SerialPrint.h"
 }
 // -----------------------------------------------------------------------------------------------
@@ -29,6 +30,8 @@ SemaphoreHandle_t printLock;
 SemaphoreHandle_t canRxQueueLock;
 SemaphoreHandle_t canTxQueueLock;
 
+SemaphoreHandle_t payloadQueueLock;
+
 // -----------------------------------------------------------------------------------------------
 // ----------------------- ARDUINO FUNCTIONS -----------------------------------------------------
 // -----------------------------------------------------------------------------------------------
@@ -39,53 +42,43 @@ void setup() {
   printLock = xSemaphoreCreateMutex();
   canRxQueueLock = xSemaphoreCreateMutex();
   canTxQueueLock = xSemaphoreCreateMutex();
+  payloadQueueLock = xSemaphoreCreateMutex();
 
-  if (canRxQueueLock == NULL)
+  if (   printLock        != NULL
+      && canRxQueueLock   != NULL
+      && canTxQueueLock   != NULL
+      && payloadQueueLock != NULL
+     )
   {
-    Serial.println("Error! Can RX lock is NULL.\n");
+    // Initialize CAN0 and CAN1, Set the proper baud rates here
+    Can0.begin(CAN_BPS_250K);
+  
+    //By default there are 7 mailboxes for each device that are RX boxes
+    //This sets each mailbox to have an open filter that will accept extended
+    //or standard frames
+    int filter;
+    
+    //extended
+    for (filter = 0; filter < 3; filter++) {
+      Can0.setRXFilter(filter, 0, 0, true);
+    }  
+    //standard
+    for (int filter = 3; filter < 7; filter++) {
+      Can0.setRXFilter(filter, 0, 0, false);
+    }  
+    
+    Can0.watchFor();
+  
+    startPeriodicTasks();
+    SerialPrint("Starting Scheduler.\n");
+  
+    // Start FreeRTOS
+    vTaskStartScheduler();
   }
   else
   {
-    if (canTxQueueLock == NULL)
-    {
-      Serial.println("Error! CAN TX lock is NULL.\n");
-    }
-    else
-    {
-      if (printLock != NULL)
-      {
-        // Initialize CAN0 and CAN1, Set the proper baud rates here
-        Can0.begin(CAN_BPS_250K);
-      
-        //By default there are 7 mailboxes for each device that are RX boxes
-        //This sets each mailbox to have an open filter that will accept extended
-        //or standard frames
-        int filter;
-        
-        //extended
-        for (filter = 0; filter < 3; filter++) {
-          Can0.setRXFilter(filter, 0, 0, true);
-        }  
-        //standard
-        for (int filter = 3; filter < 7; filter++) {
-          Can0.setRXFilter(filter, 0, 0, false);
-        }  
-        
-        Can0.watchFor();
-
-        startPeriodicTasks();
-        SerialPrint("Starting Scheduler.\n");
-    
-        // Start FreeRTOS
-        vTaskStartScheduler();
-      }
-      else
-      {
-        Serial.println("Error, printlock is NULL.\n");
-      }
-    }
+    Serial.println("Error, 1 or more locks are NULL.");
   }
-
   Serial.println("Insufficent RAM.\n");
   while(1){};
 }
@@ -103,12 +96,12 @@ int SerialRead(int default_value) {
   int received = 0x00;
   CAN_Message message;
   
-  message.id = 0x020;
-  message.length = 4;
-  message.data.bytes[0] = 0x01;
-  message.data.bytes[1] = 0x02;
-  message.data.bytes[2] = 0x03;
-  message.data.bytes[3] = 0x04;
+  message.id = POWER_ID;
+  message.length = 8;
+  message.data.bytes[0] = 0x50;
+  message.data.bytes[1] = 0x00;
+  message.data.bytes[2] = 0x00;
+  message.data.bytes[3] = 0x00;
   
   while( xSemaphoreTake( printLock, portMAX_DELAY ) != pdTRUE ){}
 
@@ -116,14 +109,38 @@ int SerialRead(int default_value) {
   {
     received = Serial.read();
     
-    if (received == 'A') {
+    if (received == 'A') 
+    {
       result = 10;
-    } else if (received == 'B') {
+    } 
+    else if (received == 'B') 
+    {
       result = 90;
-    } else if (received == 'C') {
+    }
+    else if (received == 'C') 
+    {
       AddToTXQueue(&message);
       Serial.println("Added to TX queue");
-    } else if (received == 'D') {
+    }
+    else if (received == 'D') 
+    {
+      message.id = POWER_ID;
+      message.length = 8;
+      message.data.bytes[0] = 0x50;
+      message.data.bytes[1] = 0x00;
+      message.data.bytes[2] = 0x00;
+      message.data.bytes[3] = 0x00;
+      
+      AddToRXQueue(&message);
+      Serial.println("Added to RX queue");
+    }
+    else if (received == 'E')
+    {
+      message.id = PAYLOAD_ID;
+      message.length = 8;
+      message.data.bytes[0] = 1;  // Well number
+      // Reading and reserved bytes not set.
+      
       AddToRXQueue(&message);
       Serial.println("Added to RX queue");
     }

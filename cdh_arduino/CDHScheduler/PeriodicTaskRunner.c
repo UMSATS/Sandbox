@@ -20,8 +20,9 @@
 // -----------------------------------------------------------------------------------------------
 // ----------------------- DEFINES ---------------------------------------------------------------
 // -----------------------------------------------------------------------------------------------
+// Cpu monitor defines.
 #define MAX_TICKS 10000
-#define MAX_ASSUMED_COUNT 262000
+#define MAX_ASSUMED_COUNT 380400
 
 // -----------------------------------------------------------------------------------------------
 // ----------------------- FUNCTION PROTOTYPES ---------------------------------------------------
@@ -69,9 +70,10 @@ TaskInfo CDH_PeriodicTaskTable[TOTAL_NUMBER_OF_TASKS] =
   { (const char *)"Hello World low",      (UBaseType_t) 2,          256,      TaskWrite_low_priority,               NULL,            (TaskHandle_t) NULL,  SOMETIMES_ON },
   { (const char *)"Change Mock Power",    (UBaseType_t) 2,          256,      changeMockPower,                      NULL,            (TaskHandle_t) NULL,  ALWAYS_ON    },
   { (const char *)"CAN Message Manager",  (UBaseType_t) 2,          256,      CANManager,                           NULL,            (TaskHandle_t) NULL,  ALWAYS_ON    },
-  { (const char *)"CAN Monitor",          (UBaseType_t) 2,          256,      CANMonitor,                           NULL,            (TaskHandle_t) NULL,  ALWAYS_ON    },
+  { (const char *)"CAN Monitor",          (UBaseType_t) 2,          512,      CANMonitor,                           NULL,            (TaskHandle_t) NULL,  ALWAYS_ON    },
   { (const char *)"CPU Monitor",          (UBaseType_t) 1,          128,      CpuMonitor,                           NULL,            (TaskHandle_t) NULL,  ALWAYS_ON    },
 };
+
 
 // -----------------------------------------------------------------------------------------------
 // ----------------------- FUNCTIONS -------------------------------------------------------------
@@ -108,19 +110,23 @@ static void CpuMonitor(void *pvParameters)
   UNUSED(pvParameters);
   TickType_t previousCheck = 0;
   TickType_t currentCheck;
-  int count = 0;
+  
+  unsigned int count = 0;
+  unsigned int printPeriod = 0;
 
   while (1)
   {
     count++;
     currentCheck = xTaskGetTickCount();
 
-    if ((currentCheck - previousCheck) >= MAX_TICKS )  // Report every ~10000 ticks.
+    if ((currentCheck - previousCheck) >= MAX_TICKS )  // Report every ~1000 ticks.
     {
+
       SerialPrint("CPU MONITOR: Load is approx ");
       SerialPrintInt( 100 - (count/ (MAX_ASSUMED_COUNT)) );  // Based on bench testing, this will give a rough calculation of the CPU load.
       //SerialPrintInt( count );
       SerialPrint("%\n");
+      printPeriod = 0;      
 
       previousCheck = currentCheck;
       count = 0;

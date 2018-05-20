@@ -9,24 +9,15 @@
 // 2018-05-12 by Tamkin Rahman
 // - Created.
 
+// -----------------------------------------------------------------------------------------------
+// ----------------------- INCLUDES --------------------------------------------------------------
+// -----------------------------------------------------------------------------------------------
 #include "PeriodicTaskRunner.h"
+#include "UMSATSCommon.h"
 
 // -----------------------------------------------------------------------------------------------
-// ----------------------- STRUCTURES AND STRUCTURE TYPEDEFS -------------------------------------
+// ----------------------- VARIABLES -------------------------------------------------------------
 // -----------------------------------------------------------------------------------------------
-typedef union
-{
-    unsigned char bytes[8];
-} BytesData;
-
-typedef struct 
-{
-    unsigned int id;
-    int extended;
-    unsigned char length;
-    BytesData data;
-} CAN_Message;
-
 extern SemaphoreHandle_t canRxQueueLock;
 extern SemaphoreHandle_t canTxQueueLock;
 

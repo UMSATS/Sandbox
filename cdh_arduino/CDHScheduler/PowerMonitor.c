@@ -27,14 +27,14 @@ TaskInfo PowerMonitorParams =
 //                       name,                 priority,  stack depth,   task function,    task parameters,                task handle , power priority
     { (const char *)"Power Monitor",  (UBaseType_t)        1,          128,    PowerMonitor,               NULL,        (TaskHandle_t) NULL  , ALWAYS_ON     };
 
-int volatile mock_power = 20;
+unsigned int volatile powerReading = 20;
 
 // -----------------------------------------------------------------------------------------------
 // ----------------------- FUNCTIONS -------------------------------------------------------------
 // -----------------------------------------------------------------------------------------------
-// Mock function. Get the current power level of the system (normalized from 0 to 100).
+// Get the current power level of the system (normalized from 0 to 100).
 int GetPower(){
-  return mock_power;
+  return powerReading;
 }
 
 // ----------------------------------------------------------------------

@@ -24,7 +24,7 @@ void TaskWrite_low_priority(void *params) {
   UNUSED(params);
   
   TickType_t lastWakeTime;
-  const TickType_t frequency = pdMS_TO_TICKS( 1000 ); // Run every 1000 ms.
+  const TickType_t frequency = pdMS_TO_TICKS( 5000 ); // Run every 1000 ms.
    
   for(;;) 
   {
@@ -40,7 +40,7 @@ void TaskWrite_high_priority(void *params) {
   UNUSED(params);
   
   TickType_t lastWakeTime;
-  const TickType_t frequency = pdMS_TO_TICKS( 1000 ); // Run every 1000 ms.
+  const TickType_t frequency = pdMS_TO_TICKS( 5000 ); // Run every 1000 ms.
 
   for(;;) {
     lastWakeTime = xTaskGetTickCount();
@@ -63,13 +63,13 @@ void changeMockPower(void *params) {
 	lastWakeTime = xTaskGetTickCount();  
 	vTaskDelayUntil(&lastWakeTime, frequency);	 
     
-  valueRead = SerialRead(mock_power);
+  valueRead = SerialRead(powerReading);
     
-  if ( valueRead != mock_power ) {
-    if ( (valueRead > 0) && (valueRead <= 100) ){
-        mock_power = valueRead;
-        SerialPrint("Changed the mock power to ");
-        SerialPrintInt(mock_power);
+  if ( valueRead != powerReading ) {
+    if ( (valueRead > POWER_MIN) && (valueRead <= POWER_MAX) ){
+        powerReading = valueRead;
+        SerialPrint("Changed the power to ");
+        SerialPrintInt(powerReading);
 	      SerialPrint("\n");
       }
     }

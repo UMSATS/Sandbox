@@ -6,19 +6,23 @@
 // History
 // 2018-05-12 by Tamkin Rahman
 // - Created.
+// 2018-05-19 by Tamkin Rahman
+// - Added payload message handler.
 
 // -----------------------------------------------------------------------------------------------
 // ----------------------- INCLUDES --------------------------------------------------------------
 // -----------------------------------------------------------------------------------------------
 #include "CANManager.h"
 
+#include "PayloadData.h"
+#include "PowerMonitor.h"
 #include "SerialPrint.h"
 
 // -----------------------------------------------------------------------------------------------
 // ----------------------- DEFINES ---------------------------------------------------------------
 // -----------------------------------------------------------------------------------------------
-#define MAX_RX_QUEUE_SIZE 500
-#define MAX_TX_QUEUE_SIZE 500
+#define MAX_RX_QUEUE_SIZE 512
+#define MAX_TX_QUEUE_SIZE 512
 
 // -----------------------------------------------------------------------------------------------
 // ----------------------- VARIABLES -------------------------------------------------------------
@@ -32,6 +36,8 @@ int TX_Queue_index = 0;  // Points to the next message in the TX queue.
 // -----------------------------------------------------------------------------------------------
 // ----------------------- FUNCTION PROTOTYPES ---------------------------------------------------
 // -----------------------------------------------------------------------------------------------
+// Function Description: Handles the given message.
+void HandleMessage(CAN_Message * message);
 
 // -----------------------------------------------------------------------------------------------
 // ----------------------- FUNCTIONS -------------------------------------------------------------
@@ -55,6 +61,9 @@ void CANManager(void *pvParameters)
             while( xSemaphoreTake( canRxQueueLock, portMAX_DELAY ) != pdTRUE ){}
             
             RX_Queue_index--;
+
+            HandleMessage(&RX_Queue[RX_Queue_index]);
+            
             SerialPrint("Processed message with\n    ID: ");
             SerialPrintInt(RX_Queue[RX_Queue_index].id);
             SerialPrint("\n    Length: ");
@@ -158,5 +167,39 @@ int GetNextCANTXMessage(CAN_Message *message)
     }
 
     return rc;
+}
+
+// --------------------------------------------------------------------------------
+void HandleMessage(CAN_Message * message)
+{
+  int ix;
+  unsigned int reading;
+  switch(message->id)
+  {
+    case(POWER_ID):
+    {
+      reading = 0;
+      for(ix = 3; ix >= 0; ix--)
+      {
+        reading <<= 8;
+        reading += message->data.PowerData.powerVoltageLSB[ix];
+      }
+
+      if (reading != powerReading)
+      {
+        powerReading = reading;
+
+        SerialPrint("Changed power reading to: ");
+        SerialPrintInt(powerReading);
+        SerialPrint("\n");  
+      }
+      break;
+    }
+    case(PAYLOAD_ID):
+    {
+      HandlePayloadMessage(message);
+      break;
+    }
+  }
 }
 

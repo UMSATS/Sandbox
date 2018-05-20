@@ -1,33 +1,32 @@
-#ifndef POWER_MONITOR_H
-#define POWER_MONITOR_H
+#ifndef PAYLOAD_DATA_H
+#define PAYLOAD_DATA_H
 // UMSATS - CDH Scheduler 
 //
 // File Description:
-//   Contains definitions and prototypes for implementing the power monitor.
+//   Implements an interface for the payload handler.
 //
 // History
-// 2018-05-12 by Tamkin Rahman
-// - Removed power monitor flags.
+// 2018-05-19 by Tamkin Rahman
+// - Created.
 
 // -----------------------------------------------------------------------------------------------
 // ----------------------- INCLUDES --------------------------------------------------------------
 // -----------------------------------------------------------------------------------------------
-#include "PeriodicTaskRunner.h"
-
-// -----------------------------------------------------------------------------------------------
-// ----------------------- DEFINES ---------------------------------------------------------------
-// -----------------------------------------------------------------------------------------------
-#define POWER_MIN 0
-#define POWER_MAX 100
+#include "Generic_FreeRTOS.h"
+#include "UMSATSCommon.h"
 
 // -----------------------------------------------------------------------------------------------
 // ----------------------- VARIABLES -------------------------------------------------------------
 // -----------------------------------------------------------------------------------------------
-extern volatile unsigned int powerReading;
+extern SemaphoreHandle_t payloadQueueLock;
 
 // -----------------------------------------------------------------------------------------------
 // ----------------------- FUNCTION PROTOTYPES ---------------------------------------------------
 // -----------------------------------------------------------------------------------------------
-void PowerMonitorInit(void);
 
-#endif // POWER_MONITOR_H
+//------------
+// Function Description: Handle the given payload message and saves the reading to memory.
+void HandlePayloadMessage(CAN_Message * message);
+
+
+#endif // PAYLOAD_DATA_H
