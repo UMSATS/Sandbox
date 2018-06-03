@@ -8,6 +8,8 @@
 // History
 // 2018-05-12 by Tamkin Rahman
 // - Added CAN and Cpu monitoring tasks.
+// 2018-06-03 by Tamkin Rahman
+// - Added Time Delay Task manager task.
 
 // -----------------------------------------------------------------------------------------------
 // ----------------------- INCLUDES --------------------------------------------------------------
@@ -49,6 +51,7 @@ enum CDH_TASK_TABLE_INDICES
 	CHANGE_MOCK_POWER_IX,
   CAN_MANAGER_IX,
   CAN_MONITOR_IX,
+  TIME_DELAYED_TASK_MANAGER_IX,
   CPU_MONITOR_IX,
 	TOTAL_NUMBER_OF_TASKS,
 };

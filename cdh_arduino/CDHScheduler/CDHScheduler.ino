@@ -4,6 +4,9 @@
 //  Main entry-point for the scheduler. This file should contain the bare minimum w.r.t. working code. 
 //  Should only contain Arduino specific code.
 //
+// The due CAN bus library is used for this file: https://github.com/collin80/due_can
+// - Requires this library as well: https://github.com/collin80/can_common
+//
 // History
 // 2018-05-12 by Tamkin Rahman
 // - Updated with CAN monitor.
@@ -31,23 +34,27 @@ SemaphoreHandle_t canRxQueueLock;
 SemaphoreHandle_t canTxQueueLock;
 
 SemaphoreHandle_t payloadQueueLock;
+SemaphoreHandle_t taskQueueLock;
 
 // -----------------------------------------------------------------------------------------------
 // ----------------------- ARDUINO FUNCTIONS -----------------------------------------------------
 // -----------------------------------------------------------------------------------------------
 // The setup function runs once when you press reset or power the board
-void setup() {
+void setup() 
+{
   Serial.begin(9600);
 
   printLock = xSemaphoreCreateMutex();
   canRxQueueLock = xSemaphoreCreateMutex();
   canTxQueueLock = xSemaphoreCreateMutex();
   payloadQueueLock = xSemaphoreCreateMutex();
+  taskQueueLock = xSemaphoreCreateMutex();
 
   if (   printLock        != NULL
       && canRxQueueLock   != NULL
       && canTxQueueLock   != NULL
       && payloadQueueLock != NULL
+      && taskQueueLock    != NULL                                                                                                                                             
      )
   {
     // Initialize CAN0 and CAN1, Set the proper baud rates here
@@ -63,7 +70,7 @@ void setup() {
       Can0.setRXFilter(filter, 0, 0, true);
     }  
     //standard
-    for (int filter = 3; filter < 7; filter++) {
+    for (filter = 3; filter < 7; filter++) {
       Can0.setRXFilter(filter, 0, 0, false);
     }  
     
@@ -91,7 +98,8 @@ void loop()
 // -------------------------------------------------------------------------------------------
 // ----------------------- FUNCTIONS ---------------------------------------------------------
 // -------------------------------------------------------------------------------------------
-int SerialRead(int default_value) {
+int SerialRead(int default_value) 
+{
   int result = default_value;
   int received = 0x00;
   CAN_Message message;
@@ -144,7 +152,24 @@ int SerialRead(int default_value) {
       AddToRXQueue(&message);
       Serial.println("Added to RX queue");
     }
-    
+    else if (received == 'F')
+    {
+      message.id = GROUND_STATION;
+      message.length = 8;
+      message.data.GroundStationData.command = TURN_ON_WELL; // Command.
+      message.data.GroundStationData.dataBytes.payLoadCommand.wellNumber = 1; // Well number.
+
+      // Wait 1 second until using this command.
+      message.data.GroundStationData.dataBytes.payLoadCommand.secondsUntilCommandLSB[0] = 1;
+      message.data.GroundStationData.dataBytes.payLoadCommand.secondsUntilCommandLSB[1] = 0;
+      message.data.GroundStationData.dataBytes.payLoadCommand.secondsUntilCommandLSB[2] = 0;
+      message.data.GroundStationData.dataBytes.payLoadCommand.secondsUntilCommandLSB[3] = 0;
+      
+      // Reading and reserved bytes not set.
+      
+      AddToRXQueue(&message);
+      Serial.println("Added to RX queue");
+    }    
   }    
   xSemaphoreGive( printLock );
   
@@ -152,14 +177,16 @@ int SerialRead(int default_value) {
 }
 
 // --------------------------------------------------------------------------------
-void SerialPrint(const char * text) {
+void SerialPrint(const char * text) 
+{
   while( xSemaphoreTake( printLock, portMAX_DELAY ) != pdTRUE ){}
   Serial.print(text); 
   xSemaphoreGive( printLock );
 }
 
 // --------------------------------------------------------------------------------
-void SerialPrintInt(int text) {
+void SerialPrintInt(int text) 
+{
   while( xSemaphoreTake( printLock, portMAX_DELAY ) != pdTRUE ){} 
   Serial.print(text); 
   xSemaphoreGive( printLock );
@@ -230,22 +257,6 @@ void CANMonitor(void *pvParameters)
             vTaskDelay(0);
           }
         }
-        /*
-        if (Can0.Available() > 0)
-        {
-          currentRxMessage.id = ?;
-          currentRxMessage.length = ?;
-          for (ix = 0; ix < currentRxMessage.length; ix++)
-          {
-            currentRxMessage.data.bytes[ix] = ?[ix];
-          }
-          
-          while (AddToRXQueue(&currentRxMessage) != 0)
-          {
-            taskYield();
-          }
-        }
-         */
         
         vTaskDelayUntil(&lastWakeTime, frequency);
     }

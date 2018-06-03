@@ -1,12 +1,12 @@
-#ifndef CAN_MANAGER_H
-#define CAN_MANAGER_H
+#ifndef TIME_DELAYED_TASKS_H
+#define TIME_DELAYED_TASKS_H
 // UMSATS - CDH Scheduler 
 //
 // File Description:
-//   Implements the interface for the main CAN traffic manager.
+//   Implements the interface for the main Time Delayed Task manager.
 //
 // History
-// 2018-05-12 by Tamkin Rahman
+// 2018-06-03 by Tamkin Rahman
 // - Created.
 
 // -----------------------------------------------------------------------------------------------
@@ -18,8 +18,7 @@
 // -----------------------------------------------------------------------------------------------
 // ----------------------- VARIABLES -------------------------------------------------------------
 // -----------------------------------------------------------------------------------------------
-extern SemaphoreHandle_t canRxQueueLock;
-extern SemaphoreHandle_t canTxQueueLock;
+extern SemaphoreHandle_t taskQueueLock;
 
 // -----------------------------------------------------------------------------------------------
 // ----------------------- FUNCTION PROTOTYPES ---------------------------------------------------
@@ -27,20 +26,10 @@ extern SemaphoreHandle_t canTxQueueLock;
 
 //------------
 // Function Description: The task that initializes and runs the CAN manager.
-void CANManager(void *pvParameters);
-
-// Function Description: The task that monitors the CAN bus for received messages, transmits messages in the TX queue,
-//                       and passes messages to/from the CAN manager. This task is processor/arduino specific.
-void CANMonitor(void *pvParameters);
+void TimeDelayedTaskManager(void *pvParameters);
 
 //------------
-// Function Description: Add the given message to the internal RX queue. If a failure occurs, return 0.
-int AddToRXQueue(CAN_Message * message);
+// Function Description: Add the given message to the internal Task queue. If a failure occurs, return 0.
+int AddToTimeDelayedTaskQueue(CAN_Message * message);
 
-// Function Description: Add the given message to the internal TX queue. If a failure occurs, return 0.
-int AddToTXQueue(CAN_Message * message);
-
-// Function Description: Get the next message to transmit. If there is no message to transmit, return 0.
-int GetNextCANTXMessage(CAN_Message * message);
-
-#endif // CAN_MANAGER_H
+#endif // TIME_DELAYED_TASKS_H

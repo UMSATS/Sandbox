@@ -25,7 +25,7 @@ extern SemaphoreHandle_t payloadQueueLock;
 // -----------------------------------------------------------------------------------------------
 
 //------------
-// Function Description: Handle the given payload message and saves the reading to memory.
+// Function Description: Handle the given payload message and saves the data to memory.
 void HandlePayloadMessage(CAN_Message * message);
 
 

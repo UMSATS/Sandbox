@@ -12,6 +12,7 @@
 // -----------------------------------------------------------------------------------------------
 #include "PayloadData.h"
 
+#include "CANManager.h"
 #include "SerialPrint.h"
 
 // -----------------------------------------------------------------------------------------------
@@ -28,6 +29,7 @@ typedef struct
   unsigned char wellNumber;
   unsigned int timestamp;
   unsigned char reading[4];
+  unsigned char checksum;
 } PayLoadData;
 
 // -----------------------------------------------------------------------------------------------
@@ -44,7 +46,6 @@ PayLoadData Data_Queue[MAX_QUEUE_SIZE];
 // -----------------------------------------------------------------------------------------------
 // ----------------------- FUNCTIONS -------------------------------------------------------------
 // -----------------------------------------------------------------------------------------------
-
 void HandlePayloadMessage(CAN_Message * message)
 {
   if (QueueIndex < MAX_QUEUE_SIZE)
@@ -69,4 +70,5 @@ void HandlePayloadMessage(CAN_Message * message)
       xSemaphoreGive( payloadQueueLock);
   }
 }
+
 

@@ -17,6 +17,7 @@
 #include "PayloadData.h"
 #include "PowerMonitor.h"
 #include "SerialPrint.h"
+#include "TimeDelayedTasks.h"
 
 // -----------------------------------------------------------------------------------------------
 // ----------------------- DEFINES ---------------------------------------------------------------
@@ -179,6 +180,8 @@ void HandleMessage(CAN_Message * message)
     case(POWER_ID):
     {
       reading = 0;
+      
+      // Reading is LSB first.
       for(ix = 3; ix >= 0; ix--)
       {
         reading <<= 8;
@@ -198,6 +201,14 @@ void HandleMessage(CAN_Message * message)
     case(PAYLOAD_ID):
     {
       HandlePayloadMessage(message);
+      break;
+    }
+    case(GROUND_STATION):
+    {
+      if (!AddToTimeDelayedTaskQueue(message))
+      {
+        SerialPrint("ERROR: Task queue full.\n");
+      }
       break;
     }
   }

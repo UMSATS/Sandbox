@@ -3,7 +3,8 @@
 // UMSATS - CDH Scheduler 
 //
 // File Description:
-//   Defines the interface for input/output to the serial bus.
+//   Defines the interface for input/output to the serial bus. This is done to avoid dependencies
+//   to processor/arduino specific functions.
 //
 // History
 // 2018-05-12 by Tamkin Rahman
