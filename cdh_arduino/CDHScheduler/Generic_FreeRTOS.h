@@ -16,6 +16,8 @@
 // -----------------------------------------------------------------------------------------------
 #ifdef ATMEL_STUDIO
   #include "FreeRTOS.h"
+  #include "semphr.h"
+  #include "task.h"
 #else
   #ifndef __arm__
     #include <Arduino_FreeRTOS.h>
@@ -34,6 +36,7 @@
   // These are typedefs/defines present in FreeRTOS v8.0 but not present in FreeRTOS v7.0 (needed for compatibility with Atmel Studio).
   typedef pdTASK_CODE TaskFunction_t;
   typedef xTaskHandle TaskHandle_t;
+  typedef xQueueHandle SemaphoreHandle_t;
   typedef portTickType TickType_t;
   typedef unsigned long UBaseType_t;
   #define pdMS_TO_TICKS( xTimeInMs ) ( ( TickType_t ) ( ( ( TickType_t ) ( xTimeInMs ) * ( TickType_t ) configTICK_RATE_HZ ) / ( TickType_t ) 1000 ) )
@@ -41,3 +44,4 @@
 
 
 #endif // GENERIC_FREERTOS_H
+
