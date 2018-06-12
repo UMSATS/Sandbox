@@ -10,6 +10,9 @@
 // - Added CAN and Cpu monitoring tasks.
 // 2018-06-03 by Tamkin Rahman
 // - Added Time Delay Task manager task.
+// 2018-06-11 by Tamkin Rahman
+// - Remove Atmel Studio related defines to "Generic_FreeRTOS.h".
+
 
 // -----------------------------------------------------------------------------------------------
 // ----------------------- INCLUDES --------------------------------------------------------------
@@ -26,17 +29,6 @@
 #define SOMETIMES_ON 25
 #define RARELY_ON    50
 #define NEVER_ON     100
-
-// Used if this file is using Atmel Studio.
-#ifdef ATMEL_STUDIO
-  // These are typedefs/defines present in FreeRTOS v8.0 but not present in FreeRTOS v7.0. 
-  // TODO: Use the most recent FreeRTOS for this project OR change this project to use FreeRTOS v7.0 API.
-  typedef pdTASK_CODE TaskFunction_t;
-  typedef xTaskHandle TaskHandle_t;
-  typedef portTickType TickType_t;
-  typedef unsigned long UBaseType_t;
-  #define pdMS_TO_TICKS( xTimeInMs ) ( ( TickType_t ) ( ( ( TickType_t ) ( xTimeInMs ) * ( TickType_t ) configTICK_RATE_HZ ) / ( TickType_t ) 1000 ) )
-#endif
 
 #define UNUSED(x) (void)(x)
 
@@ -79,6 +71,5 @@ extern TaskInfo CDH_PeriodicTaskTable[TOTAL_NUMBER_OF_TASKS];
 // ----------------------- FUNCTION PROTOTYPES ---------------------------------------------------
 // -----------------------------------------------------------------------------------------------
 void startPeriodicTasks(void);
-void changeMockPower(void *pvParams);
 
 #endif

@@ -10,6 +10,9 @@
 // History
 // 2018-05-12 by Tamkin Rahman
 // - Updated with CAN monitor.
+// 2018-06-11 by Tamkin Rahman
+// - Separate scheduler initialization to a separate function.
+// - Separate "SerialRead" commands into the "MockInput" task.
 
 // -----------------------------------------------------------------------------------------------
 // ----------------------- INCLUDES --------------------------------------------------------------
@@ -21,21 +24,9 @@
 extern "C" 
 {
   #include "CANManager.h"
-  #include "PayloadData.h"
+  #include "CDHSchedulerMain.h"
   #include "SerialPrint.h"
 }
-// -----------------------------------------------------------------------------------------------
-// ----------------------- GLOBALS ---------------------------------------------------------------
-// -----------------------------------------------------------------------------------------------
-// Use a lock to prevent multiple tasks from hogging the serial bus.
-SemaphoreHandle_t printLock;
-
-SemaphoreHandle_t canRxQueueLock;
-SemaphoreHandle_t canTxQueueLock;
-
-SemaphoreHandle_t payloadQueueLock;
-SemaphoreHandle_t taskQueueLock;
-
 // -----------------------------------------------------------------------------------------------
 // ----------------------- ARDUINO FUNCTIONS -----------------------------------------------------
 // -----------------------------------------------------------------------------------------------
@@ -44,18 +35,7 @@ void setup()
 {
   Serial.begin(9600);
 
-  printLock = xSemaphoreCreateMutex();
-  canRxQueueLock = xSemaphoreCreateMutex();
-  canTxQueueLock = xSemaphoreCreateMutex();
-  payloadQueueLock = xSemaphoreCreateMutex();
-  taskQueueLock = xSemaphoreCreateMutex();
-
-  if (   printLock        != NULL
-      && canRxQueueLock   != NULL
-      && canTxQueueLock   != NULL
-      && payloadQueueLock != NULL
-      && taskQueueLock    != NULL                                                                                                                                             
-     )
+  if (SchedulerSetup())
   {
     // Initialize CAN0 and CAN1, Set the proper baud rates here
     Can0.begin(CAN_BPS_250K);
@@ -76,15 +56,12 @@ void setup()
     
     Can0.watchFor();
   
-    startPeriodicTasks();
-    SerialPrint("Starting Scheduler.\n");
-  
     // Start FreeRTOS
     vTaskStartScheduler();
   }
   else
   {
-    Serial.println("Error, 1 or more locks are NULL.");
+    Serial.println("Error, Scheduler failed to start.");
   }
   Serial.println("Insufficent RAM.\n");
   while(1){};
@@ -100,77 +77,13 @@ void loop()
 // -------------------------------------------------------------------------------------------
 int SerialRead(int default_value) 
 {
-  int result = default_value;
-  int received = 0x00;
-  CAN_Message message;
-  
-  message.id = POWER_ID;
-  message.length = 8;
-  message.data.bytes[0] = 0x50;
-  message.data.bytes[1] = 0x00;
-  message.data.bytes[2] = 0x00;
-  message.data.bytes[3] = 0x00;
+  int result = default_value;  
   
   while( xSemaphoreTake( printLock, portMAX_DELAY ) != pdTRUE ){}
-
   if (Serial.available() > 0)
   {
-    received = Serial.read();
-    
-    if (received == 'A') 
-    {
-      result = 10;
-    } 
-    else if (received == 'B') 
-    {
-      result = 90;
-    }
-    else if (received == 'C') 
-    {
-      AddToTXQueue(&message);
-      Serial.println("Added to TX queue");
-    }
-    else if (received == 'D') 
-    {
-      message.id = POWER_ID;
-      message.length = 8;
-      message.data.bytes[0] = 0x50;
-      message.data.bytes[1] = 0x00;
-      message.data.bytes[2] = 0x00;
-      message.data.bytes[3] = 0x00;
-      
-      AddToRXQueue(&message);
-      Serial.println("Added to RX queue");
-    }
-    else if (received == 'E')
-    {
-      message.id = PAYLOAD_ID;
-      message.length = 8;
-      message.data.bytes[0] = 1;  // Well number
-      // Reading and reserved bytes not set.
-      
-      AddToRXQueue(&message);
-      Serial.println("Added to RX queue");
-    }
-    else if (received == 'F')
-    {
-      message.id = GROUND_STATION;
-      message.length = 8;
-      message.data.GroundStationData.command = TURN_ON_WELL; // Command.
-      message.data.GroundStationData.dataBytes.payLoadCommand.wellNumber = 1; // Well number.
-
-      // Wait 1 second until using this command.
-      message.data.GroundStationData.dataBytes.payLoadCommand.secondsUntilCommandLSB[0] = 1;
-      message.data.GroundStationData.dataBytes.payLoadCommand.secondsUntilCommandLSB[1] = 0;
-      message.data.GroundStationData.dataBytes.payLoadCommand.secondsUntilCommandLSB[2] = 0;
-      message.data.GroundStationData.dataBytes.payLoadCommand.secondsUntilCommandLSB[3] = 0;
-      
-      // Reading and reserved bytes not set.
-      
-      AddToRXQueue(&message);
-      Serial.println("Added to RX queue");
-    }    
-  }    
+    result = Serial.read();
+  }
   xSemaphoreGive( printLock );
   
   return result;
@@ -254,6 +167,7 @@ void CANMonitor(void *pvParameters)
 
           while (AddToRXQueue(&currentRxMessage) == 0)
           {
+            // Prefer this to yielding.
             vTaskDelay(0);
           }
         }

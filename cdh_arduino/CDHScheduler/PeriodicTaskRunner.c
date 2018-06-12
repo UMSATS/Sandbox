@@ -8,6 +8,8 @@
 // - Added Cpu monitor.
 // 2018-06-03 by Tamkin Rahman
 // - Added Time Delay Task manager task.
+// 2018-06-11 by Tamkin Rahman
+// - Rename "changeMockPower" to "MockInput".
 
 // -----------------------------------------------------------------------------------------------
 // ----------------------- INCLUDES --------------------------------------------------------------
@@ -71,7 +73,7 @@ TaskInfo CDH_PeriodicTaskTable[TOTAL_NUMBER_OF_TASKS] =
 {
   { (const char *)"Hello World high",                 (UBaseType_t) 2,          256,      TaskWrite_high_priority,              NULL,            (TaskHandle_t) NULL,  ALWAYS_ON    },
   { (const char *)"Hello World low",                  (UBaseType_t) 2,          256,      TaskWrite_low_priority,               NULL,            (TaskHandle_t) NULL,  SOMETIMES_ON },
-  { (const char *)"Change Mock Power",                (UBaseType_t) 2,          256,      changeMockPower,                      NULL,            (TaskHandle_t) NULL,  ALWAYS_ON    },
+  { (const char *)"Change Mock Power",                (UBaseType_t) 2,          256,      MockInput,                            NULL,            (TaskHandle_t) NULL,  ALWAYS_ON    },
   { (const char *)"CAN Message Manager",              (UBaseType_t) 2,          256,      CANManager,                           NULL,            (TaskHandle_t) NULL,  ALWAYS_ON    },
   { (const char *)"CAN Monitor",                      (UBaseType_t) 2,          512,      CANMonitor,                           NULL,            (TaskHandle_t) NULL,  ALWAYS_ON    },
   { (const char *)"Time Delay Task Manager",          (UBaseType_t) 2,          512,      TimeDelayedTaskManager,               NULL,            (TaskHandle_t) NULL,  ALWAYS_ON    },
