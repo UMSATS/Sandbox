@@ -50,7 +50,7 @@ void HandlePayloadMessage(CAN_Message * message)
 {
   if (QueueIndex < MAX_QUEUE_SIZE)
   {
-      while( xSemaphoreTake( payloadQueueLock, portMAX_DELAY ) != pdTRUE ){}
+      WaitForSemaphore( payloadQueueLock );
       
       Data_Queue[QueueIndex].timestamp = xTaskGetTickCount();
           
@@ -65,7 +65,7 @@ void HandlePayloadMessage(CAN_Message * message)
 
       SerialPrint("Processed payload reading from well ");
       SerialPrintInt(message->data.PayloadData.wellNumber);
-      SerialPrint("\n");
+      SerialPrint("\r\n");
 
       xSemaphoreGive( payloadQueueLock);
   }

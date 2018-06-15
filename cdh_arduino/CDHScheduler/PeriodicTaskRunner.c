@@ -8,6 +8,11 @@
 // - Added Cpu monitor.
 // 2018-06-03 by Tamkin Rahman
 // - Added Time Delay Task manager task.
+// 2018-06-11 by Tamkin Rahman
+// - Rename "changeMockPower" to "MockInput".
+// - Correct type of "rc" on initializing periodic tasks.
+// - Increase stack size of tasks that make liberal use of SerialPrint to make the Atmel Studio
+//   build happy.
 
 // -----------------------------------------------------------------------------------------------
 // ----------------------- INCLUDES --------------------------------------------------------------
@@ -66,16 +71,19 @@ static void CpuMonitor(void *pvParameters);
     */
     
 
+// For tasks that make liberal use of SerialPrint, it seems they are fairly happy (i.e. no crashes) if they are allocated a lot of stack space...
 TaskInfo CDH_PeriodicTaskTable[TOTAL_NUMBER_OF_TASKS] =
 //				                      name,             priority,  stack depth,               task function,    task parameters,                      task handle,   power priority
 {
   { (const char *)"Hello World high",                 (UBaseType_t) 2,          256,      TaskWrite_high_priority,              NULL,            (TaskHandle_t) NULL,  ALWAYS_ON    },
   { (const char *)"Hello World low",                  (UBaseType_t) 2,          256,      TaskWrite_low_priority,               NULL,            (TaskHandle_t) NULL,  SOMETIMES_ON },
-  { (const char *)"Change Mock Power",                (UBaseType_t) 2,          256,      changeMockPower,                      NULL,            (TaskHandle_t) NULL,  ALWAYS_ON    },
-  { (const char *)"CAN Message Manager",              (UBaseType_t) 2,          256,      CANManager,                           NULL,            (TaskHandle_t) NULL,  ALWAYS_ON    },
+  { (const char *)"Change Mock Power",                (UBaseType_t) 2,          256,      MockInput,                            NULL,            (TaskHandle_t) NULL,  ALWAYS_ON    },
+  
+  { (const char *)"CAN Message Manager",              (UBaseType_t) 2,          1024,     CANManager,                           NULL,            (TaskHandle_t) NULL,  ALWAYS_ON    },
   { (const char *)"CAN Monitor",                      (UBaseType_t) 2,          512,      CANMonitor,                           NULL,            (TaskHandle_t) NULL,  ALWAYS_ON    },
-  { (const char *)"Time Delay Task Manager",          (UBaseType_t) 2,          512,      TimeDelayedTaskManager,               NULL,            (TaskHandle_t) NULL,  ALWAYS_ON    },
-  { (const char *)"CPU Monitor",                      (UBaseType_t) 1,          128,      CpuMonitor,                           NULL,            (TaskHandle_t) NULL,  ALWAYS_ON    },
+  { (const char *)"Time Delay Task Manager",          (UBaseType_t) 2,          1024,     TimeDelayedTaskManager,               NULL,            (TaskHandle_t) NULL,  ALWAYS_ON    },
+  
+  { (const char *)"CPU Monitor",                      (UBaseType_t) 1,          256,      CpuMonitor,                           NULL,            (TaskHandle_t) NULL,  ALWAYS_ON    },
 };
 
 
@@ -83,31 +91,30 @@ TaskInfo CDH_PeriodicTaskTable[TOTAL_NUMBER_OF_TASKS] =
 // ----------------------- FUNCTIONS -------------------------------------------------------------
 // -----------------------------------------------------------------------------------------------
 void startPeriodicTasks() {
-	TaskHandle_t rc;
+	signed portBASE_TYPE rc;
 	for(int i = 0; i < TOTAL_NUMBER_OF_TASKS; i++) 
 	{
   
-    SerialPrint("Creating task ");
-    SerialPrint(CDH_PeriodicTaskTable[i].name);
-    SerialPrint(".\n");
+		SerialPrint("Creating task ");
+		SerialPrint(CDH_PeriodicTaskTable[i].name);
+		SerialPrint(".\r\n");
 
-    rc = xTaskCreate(CDH_PeriodicTaskTable[i].taskFunction, 
-                     CDH_PeriodicTaskTable[i].name, 
-                     CDH_PeriodicTaskTable[i].stackDepth, 
-                     CDH_PeriodicTaskTable[i].taskParams, 
-                     CDH_PeriodicTaskTable[i].priority, 
-                     &CDH_PeriodicTaskTable[i].taskHandle
-                     );
-		if (errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY == rc)
-    {
-          vTaskDelete( CDH_PeriodicTaskTable[i].taskHandle );
-          SerialPrint("Failed to create task.");
-          break;
-    }
-    else
-    {
-      vTaskSuspend( CDH_PeriodicTaskTable[i].taskHandle );
-    }
+		rc = xTaskCreate(CDH_PeriodicTaskTable[i].taskFunction, 
+						 CDH_PeriodicTaskTable[i].name, 
+						 CDH_PeriodicTaskTable[i].stackDepth, 
+						 CDH_PeriodicTaskTable[i].taskParams, 
+						 CDH_PeriodicTaskTable[i].priority, 
+						 &CDH_PeriodicTaskTable[i].taskHandle
+						 );
+			if (errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY == rc)
+		{
+			  SerialPrint("Failed to create task.");
+			  break;
+		}
+		else
+		{
+		  vTaskSuspend( CDH_PeriodicTaskTable[i].taskHandle );
+		}
 	}
 
   PowerMonitorInit();
@@ -127,7 +134,6 @@ static void CpuMonitor(void *pvParameters)
   TickType_t currentCheck;
   
   unsigned int count = 0;
-  unsigned int printPeriod = 0;
 
   while (1)
   {
@@ -140,8 +146,7 @@ static void CpuMonitor(void *pvParameters)
       SerialPrint("CPU MONITOR: Load is approx ");
       SerialPrintInt( 100 - (count/ (MAX_ASSUMED_COUNT)) );  // Based on bench testing, this will give a rough calculation of the CPU load.
       //SerialPrintInt( count );
-      SerialPrint("%\n");
-      printPeriod = 0;      
+      SerialPrint("%\r\n");    
 
       previousCheck = currentCheck;
       count = 0;

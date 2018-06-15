@@ -74,9 +74,9 @@ void PowerMonitor(void *pvParameters){
     int current_power = GetPower(); // Assume it returns 0-100.
     for (int ix = 0; ix < TOTAL_NUMBER_OF_TASKS; ix++) {
       if (CDH_PeriodicTaskTable[ix].powerPriority > current_power){
-			    Disable(CDH_PeriodicTaskTable[ix].taskHandle);
+		Disable(CDH_PeriodicTaskTable[ix].taskHandle);
       } else {
-		      Enable(CDH_PeriodicTaskTable[ix].taskHandle);
+		Enable(CDH_PeriodicTaskTable[ix].taskHandle);
       }
     } 
     vTaskDelayUntil(&lastWakeTime, frequency);

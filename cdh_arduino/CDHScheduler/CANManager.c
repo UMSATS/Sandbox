@@ -55,27 +55,27 @@ void CANManager(void *pvParameters)
     
     while (1)
     {
-        // SerialPrint("CAN Manager running\n");
+        // SerialPrint("CAN Manager running\r\n");
 
         while (RX_Queue_index > 0)
         {
-            while( xSemaphoreTake( canRxQueueLock, portMAX_DELAY ) != pdTRUE ){}
+            WaitForSemaphore( canRxQueueLock );
             
             RX_Queue_index--;
 
             HandleMessage(&RX_Queue[RX_Queue_index]);
             
-            SerialPrint("Processed message with\n    ID: ");
+            SerialPrint("Processed message with\r\n    ID: ");
             SerialPrintInt(RX_Queue[RX_Queue_index].id);
-            SerialPrint("\n    Length: ");
+            SerialPrint("\r\n    Length: ");
             SerialPrintInt(RX_Queue[RX_Queue_index].length);
-            SerialPrint("\n    Bytes : ");
+            SerialPrint("\r\n    Bytes : ");
             for (ix = 0; ix < RX_Queue[RX_Queue_index].length; ix++)
             {
               SerialPrintInt(RX_Queue[RX_Queue_index].data.bytes[ix]);
               SerialPrint(" ");
             }
-            SerialPrint("\n");
+            SerialPrint("\r\n");
 
             xSemaphoreGive( canRxQueueLock );
         }
@@ -91,7 +91,7 @@ int AddToRXQueue(CAN_Message *message)
     int rc = 0;
     if (RX_Queue_index < MAX_RX_QUEUE_SIZE)
     {
-        while( xSemaphoreTake( canRxQueueLock, portMAX_DELAY ) != pdTRUE ){}
+        WaitForSemaphore( canRxQueueLock );
         
         RX_Queue[RX_Queue_index].id = message->id;
         RX_Queue[RX_Queue_index].length = message->length;
@@ -118,7 +118,7 @@ int AddToTXQueue(CAN_Message * message)
 
     if (TX_Queue_index < MAX_TX_QUEUE_SIZE)
     {
-        while( xSemaphoreTake( canTxQueueLock, portMAX_DELAY ) != pdTRUE ){}
+        WaitForSemaphore( canTxQueueLock );
                   
         TX_Queue[TX_Queue_index].id = message->id;
         TX_Queue[TX_Queue_index].length = message->length;
@@ -146,7 +146,7 @@ int GetNextCANTXMessage(CAN_Message *message)
     
     if (TX_Queue_index > 0)
     {
-        while( xSemaphoreTake( canTxQueueLock, portMAX_DELAY ) != pdTRUE ){}
+        WaitForSemaphore( canTxQueueLock );
         
         TX_Queue_index--;
               
@@ -194,7 +194,7 @@ void HandleMessage(CAN_Message * message)
 
         SerialPrint("Changed power reading to: ");
         SerialPrintInt(powerReading);
-        SerialPrint("\n");  
+        SerialPrint("\r\n");  
       }
       break;
     }
@@ -207,7 +207,7 @@ void HandleMessage(CAN_Message * message)
     {
       if (!AddToTimeDelayedTaskQueue(message))
       {
-        SerialPrint("ERROR: Task queue full.\n");
+        SerialPrint("ERROR: Task queue full.\r\n");
       }
       break;
     }
