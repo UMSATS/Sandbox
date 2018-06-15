@@ -10,6 +10,9 @@
 // - Added Time Delay Task manager task.
 // 2018-06-11 by Tamkin Rahman
 // - Rename "changeMockPower" to "MockInput".
+// - Correct type of "rc" on initializing periodic tasks.
+// - Increase stack size of tasks that make liberal use of SerialPrint to make the Atmel Studio
+//   build happy.
 
 // -----------------------------------------------------------------------------------------------
 // ----------------------- INCLUDES --------------------------------------------------------------
@@ -88,7 +91,7 @@ TaskInfo CDH_PeriodicTaskTable[TOTAL_NUMBER_OF_TASKS] =
 // ----------------------- FUNCTIONS -------------------------------------------------------------
 // -----------------------------------------------------------------------------------------------
 void startPeriodicTasks() {
-	TaskHandle_t rc;
+	signed portBASE_TYPE rc;
 	for(int i = 0; i < TOTAL_NUMBER_OF_TASKS; i++) 
 	{
   
@@ -131,7 +134,6 @@ static void CpuMonitor(void *pvParameters)
   TickType_t currentCheck;
   
   unsigned int count = 0;
-  unsigned int printPeriod = 0;
 
   while (1)
   {
@@ -144,8 +146,7 @@ static void CpuMonitor(void *pvParameters)
       SerialPrint("CPU MONITOR: Load is approx ");
       SerialPrintInt( 100 - (count/ (MAX_ASSUMED_COUNT)) );  // Based on bench testing, this will give a rough calculation of the CPU load.
       //SerialPrintInt( count );
-      SerialPrint("%\r\n");
-      printPeriod = 0;      
+      SerialPrint("%\r\n");    
 
       previousCheck = currentCheck;
       count = 0;

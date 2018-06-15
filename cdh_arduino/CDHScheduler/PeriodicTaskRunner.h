@@ -11,7 +11,7 @@
 // 2018-06-03 by Tamkin Rahman
 // - Added Time Delay Task manager task.
 // 2018-06-11 by Tamkin Rahman
-// - Remove Atmel Studio related defines to "Generic_FreeRTOS.h".
+// - Move Atmel Studio related defines to "Generic_FreeRTOS.h".
 
 
 // -----------------------------------------------------------------------------------------------
