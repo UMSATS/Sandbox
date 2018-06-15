@@ -16,6 +16,6 @@
 //------------
 // Function Description: The task that initializes the CDH scheduler. Returns 1 on success, 0 on
 //                       failure.
-int SchedulerSetup(void);
+int SchedulerSetup();
 
 #endif //CDH_SCHEDULER_MAIN_H

@@ -40,8 +40,14 @@
   typedef portTickType TickType_t;
   typedef unsigned long UBaseType_t;
   #define pdMS_TO_TICKS( xTimeInMs ) ( ( TickType_t ) ( ( ( TickType_t ) ( xTimeInMs ) * ( TickType_t ) configTICK_RATE_HZ ) / ( TickType_t ) 1000 ) )
+  
+  // Used to denote whether the scheduler has started.
+  extern int schedulerStarted;
+  
+  #define WaitForSemaphore( lock ) while (!schedulerStarted){} while( xSemaphoreTake( lock, portMAX_DELAY ) != pdTRUE ){} 
+#else
+  #define WaitForSemaphore( lock ) while( xSemaphoreTake( lock, portMAX_DELAY ) != pdTRUE ){} 
 #endif
 
 
 #endif // GENERIC_FREERTOS_H
-

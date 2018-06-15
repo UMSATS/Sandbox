@@ -59,8 +59,8 @@ int AddToTimeDelayedTaskQueue(CAN_Message * message)
 {
   int rc = 0;
 
-  while( xSemaphoreTake( taskQueueLock, portMAX_DELAY ) != pdTRUE ){}
-
+  WaitForSemaphore( taskQueueLock );
+  
   if (Queue_index < MAX_QUEUE_SIZE)
   {
     switch(message->data.GroundStationData.command)
@@ -78,7 +78,7 @@ int AddToTimeDelayedTaskQueue(CAN_Message * message)
         
         SerialPrint("Added TURN ON WELL command to task queue, will be delayed for ");
         SerialPrintInt(TaskQueue[Queue_index].secondsUntilTaskStart);
-        SerialPrint(" seconds.\n");
+        SerialPrint(" seconds.\r\n");
         
         Queue_index++;
         rc = 1;
@@ -95,7 +95,7 @@ int AddToTimeDelayedTaskQueue(CAN_Message * message)
         TaskQueue[Queue_index].secondsUntilTaskStart += (message->data.GroundStationData.dataBytes.payLoadCommand.secondsUntilCommandLSB[2] << 16);
         TaskQueue[Queue_index].secondsUntilTaskStart += (message->data.GroundStationData.dataBytes.payLoadCommand.secondsUntilCommandLSB[3] << 24);
         
-        SerialPrint("Added TURN OFF WELL command to task queue.\n");
+        SerialPrint("Added TURN OFF WELL command to task queue.\r\n");
     
         Queue_index++;
         rc = 1;
@@ -126,7 +126,7 @@ void TimeDelayedTaskManager(void *pvParameters)
   
   while (1)
   {
-      SerialPrint("Time Delay Task Manager running\n");
+      SerialPrint("Time Delay Task Manager running\r\n");
 
       if (Queue_index > 0)
       {
@@ -151,7 +151,7 @@ void TimeDelayedTaskManager(void *pvParameters)
             TaskQueue[ix].secondsUntilTaskStart -= 1;
             SerialPrint("Reduced seconds until task index (");
             SerialPrintInt(TaskQueue[ix].secondsUntilTaskStart);
-            SerialPrint(")\n");
+            SerialPrint(")\r\n");
           }
         }
       }
@@ -171,7 +171,7 @@ void TurnOnWellCommand(unsigned char wellNumber)
 
   if (!AddToTXQueue(&msg))
   {
-    SerialPrint("ERROR: Failed to add TURN ON WELL command to TX Queue\n");
+    SerialPrint("ERROR: Failed to add TURN ON WELL command to TX Queue\r\n");
   }
 }
 
@@ -199,7 +199,7 @@ void RemoveFromQueue(int index)
 
     SerialPrint("Removed queue element at index ");
     SerialPrintInt(index);
-    SerialPrint(".\n");
+    SerialPrint(".\r\n");
   }
 }
 

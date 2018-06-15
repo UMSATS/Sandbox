@@ -19,6 +19,7 @@
 // -----------------------------------------------------------------------------------------------
 // Use a lock to prevent multiple tasks from hogging the serial bus.
 SemaphoreHandle_t printLock;
+SemaphoreHandle_t scanLock;
 
 SemaphoreHandle_t canRxQueueLock;
 SemaphoreHandle_t canTxQueueLock;
@@ -35,12 +36,14 @@ int SchedulerSetup()
 
   // Initialise all semaphores.
   printLock = xSemaphoreCreateMutex();
+  scanLock = xSemaphoreCreateMutex();
   canRxQueueLock = xSemaphoreCreateMutex();
   canTxQueueLock = xSemaphoreCreateMutex();
   payloadQueueLock = xSemaphoreCreateMutex();
   taskQueueLock = xSemaphoreCreateMutex();
 
   if (   printLock        != NULL
+      && scanLock         != NULL
       && canRxQueueLock   != NULL
       && canTxQueueLock   != NULL
       && payloadQueueLock != NULL
@@ -48,7 +51,7 @@ int SchedulerSetup()
      )
   {
     startPeriodicTasks();
-    SerialPrint("Starting Scheduler.\n");
+    SerialPrint("Starting Scheduler.\r\n");
 
     result = 1;
   }
