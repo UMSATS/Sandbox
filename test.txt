@@ -1,1 +1,7 @@
+<<<<<<< HEAD
 testgit.file
+=======
+this is a test thing
+its pretty cool
+
+>>>>>>> origin/master
