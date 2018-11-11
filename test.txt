@@ -1,3 +1,6 @@
+<<<<<<< HEAD
+testgit.file
+=======
 this is a test thing
 those are :wq
 
@@ -6,3 +9,4 @@ its pretty cool
 :wq
 
 
+>>>>>>> origin/master
